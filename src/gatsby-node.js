@@ -1,33 +1,87 @@
-const crypto = require('crypto')
-const axios = require('axios')
+const crypto = require("crypto");
+const axios = require("axios");
 
-exports.sourceNodes = async ({ boundActionCreators: { createNode } }, { subdomain, apiKey, queryParams = { state: 'published' }, fetchJobDetails }) => {
+exports.sourceNodes = async (
+  { boundActionCreators: { createNode } },
+  { subdomain, apiKey, queryParams = { state: "published" }, fetchJobDetails }
+) => {
   const axiosClient = axios.create({
     baseURL: `https://${subdomain}.workable.com/spi/v3/`,
     headers: {
       Authorization: `Bearer ${apiKey}`
     }
-  })
+  });
 
   // Get list of all jobs
-  const { data: { jobs } } = await axiosClient.get('/jobs', { params: queryParams });
+  const {
+    data: { jobs }
+  } = await axiosClient.get("/jobs", { params: queryParams });
 
-  for(const job of jobs) {
+  const crypto = require("crypto");
+  const axios = require("axios");
+
+  exports.sourceNodes = async (
+    { boundActionCreators: { createNode } },
+    { subdomain, apiKey, queryParams = { state: "published" }, fetchJobDetails }
+  ) => {
+    const axiosClient = axios.create({
+      baseURL: `https://${subdomain}.workable.com/spi/v3/`,
+      headers: {
+        Authorization: `Bearer ${apiKey}`
+      }
+    });
+
+    // Get list of all jobs
+    const {
+      data: { jobs }
+    } = await axiosClient.get("/jobs", { params: queryParams });
+
+    for (const job of jobs) {
+      // Fetch job details if needed
+      const jobData = fetchJobDetails
+        ? (await axiosClient.get(`/jobs/${job.shortcode}`)).data
+        : job;
+
+      const jsonString = JSON.stringify(jobData);
+      const gatsbyNode = {
+        ...jobData,
+        children: [],
+        parent: "__SOURCE__",
+        internal: {
+          type: "WorkableJob",
+          content: jsonString,
+          contentDigest: crypto
+            .createHash("md5")
+            .update(jsonString)
+            .digest("hex")
+        }
+      };
+      // Insert data into gatsby
+      createNode(gatsbyNode);
+    }
+  };
+
+  for (const job of jobs) {
     // Fetch job details if needed
-    const jobData = fetchJobDetails ? (await axiosClient.get(`/jobs/${job.shortcode}`)).data : job;
+    const jobData = fetchJobDetails
+      ? (await axiosClient.get(`/jobs/${job.shortcode}`)).data
+      : job;
 
-    const jsonString = JSON.stringify(jobData)
+    const jsonString = JSON.stringify(jobData);
     const gatsbyNode = {
       ...jobData,
       children: [],
-      parent: '__SOURCE__',
+      parent: "__SOURCE__",
       internal: {
-        type: 'WorkableJob',
+        type: "WorkableJob",
         content: jsonString,
-        contentDigest: crypto.createHash('md5').update(jsonString).digest('hex'),
-      },
-    }
+        contentDigest: crypto
+          .createHash("md5")
+          .update(jsonString)
+          .digest("hex")
+      }
+    };
     // Insert data into gatsby
-    createNode(gatsbyNode)
+    createNode(gatsbyNode);
   }
-}
+};
