@@ -36,6 +36,28 @@ exports.sourceNodes = async (
       data: { jobs }
     } = await axiosClient.get("/jobs", { params: queryParams });
 
+    // Create WorkableJob type to avoid gatsby errors
+    if (!jobs.length) {
+      createTypes(`
+      type WorkableLocation {
+        country_code: String
+      }
+
+      type WorkableJob implements Node @infer {
+        id: String
+        url: String
+        title: String
+        state: String
+        shortlink: String
+        department: String
+        created_at: String
+        location: WorkableLocation
+      }
+    `);
+
+      return;
+    }
+
     for (const job of jobs) {
       // Fetch job details if needed
       const jobData = fetchJobDetails
