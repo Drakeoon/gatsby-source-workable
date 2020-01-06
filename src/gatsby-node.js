@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const axios = require("axios");
 
 exports.sourceNodes = async (
-  { boundActionCreators: { createNode } },
+  { boundActionCreators: { createNode, createTypes } },
   { subdomain, apiKey, queryParams = { state: "published" }, fetchJobDetails }
 ) => {
   const axiosClient = axios.create({
